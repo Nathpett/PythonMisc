@@ -1,0 +1,55 @@
+#Graph class adapted from stackoverflow user's class to meet needs for another project https://stackoverflow.com/questions/19472530/representing-graphs-data-structure-in-python
+class Graph(object):
+    """ Graph data structure, undirected"""
+    def __init__(self, connections):
+        self._graph = defaultdict(set)
+        self._edges = {}
+        self.add_edges(connections)
+
+    def add_edges(self, edges):
+        """ Add connections (list of tuple pairs) to graph
+            can also be dict of tuple pairs : evaluateable string for constructing an saved Edge"""
+        if isinstance(edges, dict):
+            for key, value in edges.items():
+                 self.add(key[0], key[1], value)
+        else:
+            for node1, node2 in edges:
+                self.add(node1, node2)
+
+    def add(self, node1, node2, edge = None):
+        """ Add connection between node1 and node2 """
+        self._graph[node1].add(node2)
+        self._graph[node2].add(node1)
+        if edge:
+            self._edges[tuple(sorted([node1, node2]))] = eval(edge)
+        else:
+            self._edges[tuple(sorted([node1, node2]))] = Edge()
+
+    def remove(self, node):
+        """ Remove all references to node """
+        for n, cxns in self._graph.items():
+            try:
+                cxns.remove(node)
+                del self._edges[tuple(sorted([node, n]))]
+            except KeyError:
+                pass
+        try:
+            del self._graph[node]
+        except KeyError:
+            pass
+
+    def is_connected(self, node1, node2):
+        """ Is node1 directly connected to node2 """
+        return node1 in self._graph and node2 in self._graph[node1]
+
+    def __str__(self):
+        return '{}({})'.format(self.__class__.__name__, {key: str(value) for key, value in self._edges.items()})
+
+#Edge class WIP
+class Edge(object):
+    def __init__(self, dict={}):
+        self.__dict__ = dict
+
+    def __str__(self):
+        return '{}({})'.format(self.__class__.__name__, self.__dict__)
+
