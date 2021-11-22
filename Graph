@@ -47,8 +47,9 @@ class Graph(object):
 
 #Edge class WIP
 class Edge(object):
-    def __init__(self, dict={}):
-        self.__dict__ = dict
+    def __init__(self, dict=None):
+        if dict:
+            self.__dict__ = dict
 
     def __str__(self):
         return '{}({})'.format(self.__class__.__name__, self.__dict__)
