@@ -1,3 +1,6 @@
+from random import random, randint, shuffle
+from collections import defaultdict
+
 class world_graph():
     def __init__(self, building_weights):
         self.graph = Graph()
