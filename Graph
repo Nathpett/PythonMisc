@@ -33,7 +33,7 @@ class world_graph():
             extent = round(random() * (1.0 - 0.7) / 0.05) * 0.05
             streets.append((axis, pt, (extent, extent + length)))
 
-        #using that list, generate Graph, where each intersection is a node.
+        #using that list, generate Graph, where each intersection and street end is a node.
         for key, value in building_dict.items():
             pass
 
