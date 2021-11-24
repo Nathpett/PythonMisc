@@ -30,15 +30,14 @@ class world_graph():
                     axis = 1
 
             pt = pts[axis].pop()
-
-
-
-            streets.append((axis, pt, (extent1, extent2)))
-
+            extent = round(random() * (1.0 - 0.7) / 0.05) * 0.05
+            streets.append((axis, pt, (extent, extent + length)))
 
         #using that list, generate Graph, where each intersection is a node.
         for key, value in building_dict.items():
             pass
+
+
 
 
 
