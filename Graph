@@ -3,6 +3,9 @@ import numpy.random as np_random
 from random import random, randint, shuffle
 from collections import defaultdict
 
+
+# https://stackoverflow.com/questions/19472530/representing-graphs-data-structure-in-python
+
 class world_graph():
     def __init__(self, building_weights):
         self.graph = Graph()
@@ -10,20 +13,24 @@ class world_graph():
     def new_world_graph(self, building_dict, street_ct):
         # building dict -- building_name: building_weight
         # street_ct = sum(building_dict.values) // 5 + len(characters) // 12
-        min_street_dist = 0.05  # distance between parallel streets
-        if street_ct > 2 * (1/min_street_dist):
+        block_len = 0.05  # distance between parallel streets
+        if street_ct > 2 * (1/block_len):
             raise ValueError
 
         #randomly generate a list of lines -- integer, float, tuple -- representing streets
         streets = [(0, 0.5, (0.0, 1.0)), (1, 0.5, (0.0, 1.0))]  #(axis, pnt_on_axis, (extent1, extent2))
 
-        pts = [[i*min_street_dist for i in range(int(1 / min_street_dist))],[i*min_street_dist for i in range(int(1 / min_street_dist))]]
+        pts = [[round(i*block_len, 2) for i in range(int(1 / block_len))],[round(i*block_len, 2) for i in range(int(1 / block_len))]]
+        if 0.5 in pts[0]:
+            pts[0].remove(0.5)
+            pts[1].remove(0.5)
+
         shuffle(pts[0])
         shuffle(pts[1])
 
-        #street = (axis, pt_on_axis, (extent1, extent2))
+        #street = (axis, pt_on_axis, extent1, extent2)
         for i in range(street_ct):
-            length = 0.5 + min_street_dist * round(random() * (1/ (min_street_dist / 0.5)))
+            length = 0.5 + block_len * round(random() * (1/ (block_len / 0.5)))
             if len(pts[0]) > 0 and len(pts[1]) > 0:
                 axis = randint(0, 1)
             else:
@@ -34,33 +41,30 @@ class world_graph():
 
             pt = pts[axis].pop()
             extent = round(random() * (1.0 - 0.7) / 0.05) * 0.05
-            streets.append((axis, pt, (extent, extent + length)))
+            streets.append((axis, pt, extent, extent + length))
 
         # === using that list, generate Graph, where each intersection and street end is a node. ===
         self._graph = Graph()
-        
-        v_streets = [street for street in streets if street[0] == 1]
-        h_streets = [street for street in streets if street[0] == 0]
 
-        #start by adding nodes to vertical street ends, not minding intersections because there cannot be any
-        for street in v_streets:
-            pass
+        streets = {k:v for k, v in enumerate(streets)}
 
-        
+        #From streets, generate a list of intersections (nodes)
 
         #finally add buildings somehow
         for key, value in building_dict.items():
             pass
 
 
-# class adapted from https://stackoverflow.com/questions/19472530/representing-graphs-data-structure-in-python
+
 class Graph(object):
     """ Graph data structure, undirected by default. """
 
     def __init__(self, connections):
         self._graph = defaultdict(set)
         self._edges = {}
+        self._running_id = 0
         self.add_edges(connections)
+
 
     def add_edges(self, edges):
         """ Add connections (list of tuple pairs) to graph
@@ -72,8 +76,13 @@ class Graph(object):
             for node1, node2 in edges:
                 self.add(node1, node2)
 
-    def add(self, node1, node2, edge=None):
+    def add(self, node1 = None, node2 = None, edge=None):
         """ Add connection between node1 and node2 """
+        if node1 is None:
+            node1 = self.new_id()
+        if node2 is None:
+            node2 = self.new_id()
+
         self._graph[node1].add(node2)
         self._graph[node2].add(node1)
         if edge:
@@ -115,6 +124,11 @@ class Graph(object):
 
     def bisect(self, edge, node, length = 0.5):
         #bisects edge with node:  bisect("AB", "C") ===>  EDGES: "AC", "CB"
+
+
+    def new_id(self):
+        self._running_id += 1
+        return self._running_id - 1
 
 
     def __str__(self):
