@@ -14,13 +14,14 @@ class world_graph():
         # building dict -- building_name: building_weight
         # street_ct = sum(building_dict.values) // 5 + len(characters) // 12
         block_len = 0.05  # distance between parallel streets
-        if street_ct > 2 * (1/block_len):
+        if street_ct > 2 * (1 / block_len):
             raise ValueError
 
-        #randomly generate a list of lines -- integer, float, tuple -- representing streets
-        streets = [(0, 0.5, 0.0, 1.0), (1, 0.5, 0.0, 1.0)]  #(axis, pnt_on_axis, (extent1, extent2))
+        # randomly generate a list of lines -- integer, float, tuple -- representing streets
+        streets = [(0, 0.5, 0.0, 1.0), (1, 0.5, 0.0, 1.0)]  # (axis, pnt_on_axis, extent1, extent2)
 
-        pts = [[round(i*block_len, 2) for i in range(int(1 / block_len))],[round(i*block_len, 2) for i in range(int(1 / block_len))]]
+        pts = [[round(i * block_len, 2) for i in range(int(1 / block_len))],
+               [round(i * block_len, 2) for i in range(int(1 / block_len))]]
         if 0.5 in pts[0]:
             pts[0].remove(0.5)
             pts[1].remove(0.5)
@@ -28,9 +29,9 @@ class world_graph():
         shuffle(pts[0])
         shuffle(pts[1])
 
-        #street = (axis, pt_on_axis, extent1, extent2)
+        # street = (axis, pt_on_axis, extent1, extent2)
         for i in range(street_ct):
-            length = 0.5 + block_len * round(random() * (1/ (block_len / 0.5)))
+            length = 0.5 + block_len * round(random() * (1 / (block_len / 0.5)))
             if len(pts[0]) > 0 and len(pts[1]) > 0:
                 axis = randint(0, 1)
             else:
@@ -40,31 +41,30 @@ class world_graph():
                     axis = 1
 
             pt = pts[axis].pop()
-            extent = round(random() * (1.0 - 0.7) / 0.05) * 0.05
+            extent = round(random() * (1.0 - length) / block_len) * block_len
             streets.append((axis, pt, extent, extent + length))
 
         # === using that list, generate Graph, where each intersection and street end is a node. ===
         self._graph = Graph()
 
-        streets = {k:v for k, v in enumerate(streets)}
+        streets.sort()
 
-        #From streets, generate a list of intersections (nodes)
+        # From streets, generate a list of intersections (nodes)
 
-        #finally add buildings somehow
+        # finally add buildings somehow
         for key, value in building_dict.items():
             pass
-
 
 
 class Graph(object):
     """ Graph data structure, undirected by default. """
 
-    def __init__(self, connections):
+    def __init__(self, connections=None):
         self._graph = defaultdict(set)
         self._edges = {}
         self._running_id = 0
-        self.add_edges(connections)
-
+        if connections:
+            self.add_edges(connections)
 
     def add_edges(self, edges):
         """ Add connections (list of tuple pairs) to graph
@@ -76,7 +76,7 @@ class Graph(object):
             for node1, node2 in edges:
                 self.add(node1, node2)
 
-    def add(self, node1 = None, node2 = None, edge=None):
+    def add(self, node1=None, node2=None, edge=None):
         """ Add connection between node1 and node2 """
         if node1 is None:
             node1 = self.new_id()
@@ -122,14 +122,13 @@ class Graph(object):
                     return new_path
         return None
 
-    def bisect(self, edge, node, length = 0.5):
-        #bisects edge with node:  bisect("AB", "C") ===>  EDGES: "AC", "CB"
-
+    def bisect(self, edge, node, length=0.5):
+        pass
+        # bisects edge with node:  bisect("AB", "C") ===>  EDGES: "AC", "CB"
 
     def new_id(self):
         self._running_id += 1
         return self._running_id - 1
-
 
     def __str__(self):
         return '{}({})'.format(self.__class__.__name__, {key: str(value) for key, value in self._edges.items()})
