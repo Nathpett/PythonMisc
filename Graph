@@ -31,7 +31,7 @@ class world_graph():
 
         # street = (axis, pt_on_axis, extent1, extent2)
         for i in range(street_ct):
-            length = 0.5 + block_len * round(random() * (1 / (block_len / 0.5)))
+            length = round(0.5 + block_len * round(random() * (1 / (block_len / 0.5))), 2)
             if len(pts[0]) > 0 and len(pts[1]) > 0:
                 axis = randint(0, 1)
             else:
@@ -41,15 +41,48 @@ class world_graph():
                     axis = 1
 
             pt = pts[axis].pop()
-            extent = round(random() * (1.0 - length) / block_len) * block_len
-            streets.append((axis, pt, extent, extent + length))
+            extent1 = round(round(random() * (1.0 - length) / block_len) * block_len, 2)
+            streets.append((axis, pt, extent1, round(extent1 + length, 2)))
 
-        # === using that list, generate Graph, where each intersection and street end is a node. ===
-        self._graph = Graph()
-
+        # === using that list, generate Graph, where each intersection and street end is a node. ==
         streets.sort()
+        v_streets = [street for street in streets if street[0] == 0]
+        h_streets = [street for street in streets if street[0] == 1]
+        #transform streets into list of Vector2s belonging to an axis.
+        new_streets = [] #[(axis, Vec2_a, Vec2_b... vec2_n)]
+        for street in v_streets:
+            s_axis, s_pt, s_extent1, s_extent2 = street
+            vectors = set()
 
-        # From streets, generate a list of intersections (nodes)
+            vectors.add((s_pt, s_extent1))
+            for alt_street in h_streets:
+                a_axis, a_pt, a_extent1, a_extent2 = alt_street
+                if (a_extent1 <= s_pt <= a_extent2) and (s_extent1 <= a_pt <= s_extent2):
+                    vectors.add((s_pt, a_pt))
+            vectors.add((s_pt, s_extent2))
+
+            new_street = sorted(tuple(vectors))
+            new_streets.append(new_street)
+
+        for street in h_streets:
+            s_axis, s_pt, s_extent1, s_extent2 = street
+            vectors = set()
+
+            vectors.add((s_extent1, s_pt))
+            for alt_street in v_streets:
+                a_axis, a_pt, a_extent1, a_extent2 = alt_street
+                if (a_extent1 <= s_pt <= a_extent2) and (s_extent1 <= a_pt <= s_extent2):
+                    vectors.add((a_pt, s_pt))
+            vectors.add((s_extent2, s_pt))
+
+            new_street = sorted(tuple(vectors))
+            new_streets.append(new_street)
+
+        self._graph = Graph()
+        for street in new_streets:
+            for vec1, vec2 in zip(street, street[1:]):
+                length = round(abs(vec1[0]-vec2[0]) + abs(vec1[1] - vec2[1]), 2)
+                self._graph.add(vec1, vec2, Edge({"length": length}))
 
         # finally add buildings somehow
         for key, value in building_dict.items():
@@ -86,7 +119,12 @@ class Graph(object):
         self._graph[node1].add(node2)
         self._graph[node2].add(node1)
         if edge:
-            self._edges[tuple(sorted([node1, node2]))] = eval(edge)
+            if isinstance(edge, Edge):
+                self._edges[tuple(sorted([node1, node2]))] = edge
+            elif isinstance(edge, str):
+                self._edges[tuple(sorted([node1, node2]))] = eval(edge)
+            else:
+                raise ValueError
         else:
             self._edges[tuple(sorted([node1, node2]))] = Edge()
 
@@ -95,7 +133,7 @@ class Graph(object):
         for n, cxns in self._graph.items():
             try:
                 cxns.remove(node)
-                del self._edges[tuple(sorted([node, n]))]
+                self._edges.remove(tuple(sorted([node, n])))
             except KeyError:
                 pass
         try:
