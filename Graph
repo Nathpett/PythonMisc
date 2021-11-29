@@ -88,7 +88,7 @@ class world_graph():
         for key, value in building_dict.items():
             for _ in range(value):
                 r_vec2 = (np_random.normal() + 0.5, np_random.normal() + 0.5)
-
+                street = self.nearest_street(r_vec2)
 
     def nearest_street(self, vec):
         champ = None
@@ -103,18 +103,18 @@ class world_graph():
             a_pt = street[0][same]
             extent1 = min(street[0][n_same], min(street[1][n_same]))
             extent2 = max(street[0][n_same], min(street[1][n_same]))
-            
+
             dist = abs(a_pt - vec[same])
-            if not extent1 <= vec[n_same] <= extent2: 
+            if not extent1 <= vec[n_same] <= extent2:
                 dist *= 10
-            
+
             if dist < champ_dist:
                 champ_dist = dist
-                champ = vec
-        
+                champ = street
+
         return champ
-                
-                
+
+
 class Graph(object):
     """ Graph data structure, undirected by default. """
 
