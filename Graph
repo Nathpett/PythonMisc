@@ -7,8 +7,10 @@ from collections import defaultdict
 # https://stackoverflow.com/questions/19472530/representing-graphs-data-structure-in-python
 
 class world_graph():
-    def __init__(self, building_weights):
+    def __init__(self, building_dict=None, street_ct=0):
         self.graph = Graph()
+        if building_dict:
+            self.new_world_graph(building_dict, street_ct)
 
     def new_world_graph(self, building_dict, street_ct):
         # building dict -- building_name: building_weight
@@ -82,13 +84,14 @@ class world_graph():
         for street in new_streets:
             for vec1, vec2 in zip(street, street[1:]):
                 length = round(abs(vec1[0] - vec2[0]) + abs(vec1[1] - vec2[1]), 2)
-                self._graph.add(vec1, vec2, Edge({"length": length}))
+                self._graph.add(vec1, vec2, Street(length))
 
-        # finally add buildings somehow
+        # finally add buildings to and along streets randomly, weight towards center
         for key, value in building_dict.items():
             for _ in range(value):
                 r_vec2 = (np_random.normal() + 0.5, np_random.normal() + 0.5)
                 street = self.nearest_street(r_vec2)
+                self._graph.edges[street].add_building(value)
 
     def nearest_street(self, vec):
         champ = None
@@ -101,8 +104,8 @@ class world_graph():
                 same = 1
                 n_same = 0
             a_pt = street[0][same]
-            extent1 = min(street[0][n_same], min(street[1][n_same]))
-            extent2 = max(street[0][n_same], min(street[1][n_same]))
+            extent1 = min(street[0][n_same], street[1][n_same])
+            extent2 = max(street[0][n_same], street[1][n_same])
 
             dist = abs(a_pt - vec[same])
             if not extent1 <= vec[n_same] <= extent2:
@@ -186,10 +189,6 @@ class Graph(object):
                     return new_path
         return None
 
-    def bisect(self, edge, node, length=0.5):
-        pass
-        # bisects edge with node:  bisect("AB", "C") ===>  EDGES: "AC", "CB"
-
     def new_id(self):
         self._running_id += 1
         return self._running_id - 1
@@ -199,9 +198,28 @@ class Graph(object):
 
 
 class Edge(object):
-    def __init__(self, dict=None):
-        if dict:
-            self.__dict__ = dict
+    def __init__(self, _dict=None):
+        if _dict:
+            self.__dict__ = _dict
 
     def __str__(self):
         return '{}({})'.format(self.__class__.__name__, self.__dict__)
+
+
+class Street(Edge):
+    def __init__(self, arg):
+        if isinstance(arg, dict):
+            super().__init__(arg)
+        else:
+            self.length = arg
+            self.buildings = {}
+
+    def add_building(self, building):
+        # add building at random length along self
+        address = round(random() * self.length, 2)
+        self.buildings[Building(building)] = address
+
+
+class Building:
+    def __init__(self, building_name):
+        name = building_name
