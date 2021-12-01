@@ -1,9 +1,7 @@
 from PyQt5.QtWidgets import QMainWindow, QOpenGLWidget, QApplication
 from PyQt5.QtCore import QTimer
-from OpenGL.GL import glEnable, glMatrixMode, glClear, glClearColor, glColor3f, glBegin, glVertex3f, glEnd, GL_PROJECTION, GL_COLOR_BUFFER_BIT, GL_DEPTH_BUFFER_BIT, GL_LINE_STRIP
+from OpenGL.GL import glEnable, glMatrixMode, glClear, glClearColor, glColor3f, glBegin, glVertex3f, glEnd, GL_PROJECTION, GL_COLOR_BUFFER_BIT, GL_DEPTH_BUFFER_BIT, GL_LINE_STRIP, GL_POLYGON
 import sys
-
-#Learning PyOpenGL and QOpenGLWidget, this is adapted code from https://www.youtube.com/watch?v=BMIHU54PsaE
 
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
@@ -16,9 +14,10 @@ class MainWindow(QMainWindow):
 class OpenGLWidget(QOpenGLWidget):
     def __init__(self, parent=None):
         QMainWindow.__init__(self, parent)
+        self.setGeometry(0, 0, parent.frameGeometry().width(), parent.frameGeometry().height())
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update)
-        self.timer.start(0)
+        self.timer.start(1)
 
     def paintGL(self):
         glMatrixMode(GL_PROJECTION)
@@ -30,7 +29,11 @@ class OpenGLWidget(QOpenGLWidget):
             glVertex3f(-1.0, i/10, 0.0)
             glVertex3f(1.0, -i/10, 0.0)
             glEnd()
-
+        glBegin(GL_POLYGON)
+        glVertex3f(-0.5, 0.6, 0.0)
+        glVertex3f(1.0, 0.2, 0.0)
+        glVertex3f(-0.5, 0.5, 0.0)
+        glEnd()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
