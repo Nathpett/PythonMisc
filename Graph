@@ -1,5 +1,5 @@
 import numpy.random as np_random
-from random import random, randint, shuffle
+from random import random, randint, shuffle, choice
 from collections import defaultdict
 
 
@@ -88,36 +88,16 @@ class world_graph():
         # finally add buildings to and along streets randomly, weight towards center
         for key, value in building_dict.items():
             for _ in range(value):
-                r_vec2 = (np_random.normal() + 0.5, np_random.normal() + 0.5)
-                street = self.nearest_street(r_vec2)
+                #r_vec2 = (np_random.normal() + 0.5, np_random.normal() + 0.5)
+                #street = self.nearest_street(r_vec2)
+                street = self.random_street()
                 self._graph.edges[street].add_building(key)
 
     def get_graph(self):
         return self._graph.edges
 
-    def nearest_street(self, vec):
-        champ = None
-        champ_dist = 100
-        for street in self._graph.edges:
-            if street[0][0] == street[1][0]:
-                same = 0
-                n_same = 1
-            else:
-                same = 1
-                n_same = 0
-            a_pt = street[0][same]
-            extent1 = min(street[0][n_same], street[1][n_same])
-            extent2 = max(street[0][n_same], street[1][n_same])
-
-            dist = abs(a_pt - vec[same])
-            if not extent1 <= vec[n_same] <= extent2:
-                dist *= 10
-
-            if dist < champ_dist:
-                champ_dist = dist
-                champ = street
-
-        return champ
+    def random_street(self):
+        return choice(list(self._graph.edges.keys()))
 
 
 class Graph(object):
@@ -208,14 +188,14 @@ class Street(Edge):
 
     def add_building(self, building):
         # add building at random length along self
-        address = round(random() * self.length, 2)
-        self.buildings.append(Building(building, address))
+        point_on_street = round(random() * self.length, 2)
+        self.buildings.append(Building(building, point_on_street))
 
 
 class Building:
-    def __init__(self, building_name, address):
+    def __init__(self, building_name, point_on_street):
         self.name = building_name
-        self.address = address
+        self.point_on_street = point_on_street
 
     def __str__(self):
         return '{}({})'.format(self.__class__.__name__, self.__dict__)
