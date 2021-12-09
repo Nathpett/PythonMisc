@@ -3,6 +3,8 @@ from PyQt5.QtCore import QTimer
 from OpenGL.GL import glEnable, glMatrixMode, glClear, glClearColor, glColor3f, glBegin, glVertex3f, glEnd, GL_PROJECTION, GL_COLOR_BUFFER_BIT, GL_DEPTH_BUFFER_BIT, GL_LINE_STRIP, GL_POLYGON
 import sys
 
+DIAMOND_RADIUS = 0.02
+
 class MainWindow(QMainWindow):
     def __init__(self, parent=None, map=None):
         QMainWindow.__init__(self, parent)
@@ -30,7 +32,6 @@ class OpenGLWidget(QOpenGLWidget):
         glClearColor(0.0, 0.0, 0.0, 0.0)
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
         glColor3f(1.0, 1.0, 1.0)
-        DIAMOND_RADIUS = 0.02
         for street_coord, street in self._map.get_graph().items():
             vec1, vec2 = street_coord
             glBegin(GL_LINE_STRIP)
@@ -58,8 +59,6 @@ class OpenGLWidget(QOpenGLWidget):
                     glVertex3f(xc - DIAMOND_RADIUS, y, 0.0)
                     glVertex3f(xc, y + DIAMOND_RADIUS, 0.0)
                     glEnd()
-
-
 
     def set_map(self, map):
         self._map = map
